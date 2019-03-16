@@ -48,6 +48,7 @@ activate :blog do |blog|
 end
 
 activate :directory_indexes
+activate :livereload
 
 page "/feed.xml", layout: false
 # Reload the browser automatically whenever files change
