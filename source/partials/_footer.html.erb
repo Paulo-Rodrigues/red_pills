@@ -1,0 +1,10 @@
+<footer class="footer">
+  <div class="footer-tags">
+    <h3 class="footer-tags-title">Tags</h3>
+      <ul class="footer-tags-list">
+        <% blog.tags.each do |tag, articles| %>
+          <li class="footer-tags-list__item"><%= link_to "#{tag} (#{articles.size})", tag_path(tag) %></li>
+        <% end %>
+      </ul>
+  </div>
+</footer>

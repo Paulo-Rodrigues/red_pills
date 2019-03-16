@@ -1,0 +1,33 @@
+.nav-menu {
+    background-color: #e2dfdf;
+    height: 60px;
+    width: 60px;
+    border-radius: 50px;
+    position: absolute;
+    z-index: 11;
+    right: 0;
+    margin: 15px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 0 0 0 #e2dfdf, 0 0 0 0 #e2dfdf;
+    transition: box-shadow 1s ease-in-out;
+
+    &:hover {
+        box-shadow: 0 0 0 8px #e2dfdf, 0 0 0 8px #e2dfdf;
+    }
+}
+
+.hamburger {
+    display: block;
+    background: #000;
+    width: 30px;
+    height: 4px;
+    margin: 2px 0;
+}
+
+#menu-hamburger {
+    display: none;
+}

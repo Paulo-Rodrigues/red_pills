@@ -1,0 +1,20 @@
+.posted-wrapper {
+    margin: 3rem;
+}
+
+.posted {
+    padding: 10px;
+
+    & h1, h2, h3 {
+        padding: 10px;
+        text-transform: uppercase;
+    }
+
+    & p {
+        padding: 10px;
+    }
+
+    & a {
+        color: #01dbdb;
+    }
+}

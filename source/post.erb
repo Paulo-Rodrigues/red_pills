@@ -8,13 +8,16 @@
     <title>Blog Title<%= ' - ' + current_article.title unless current_article.nil? %></title>
     <%= feed_tag :atom, "#{blog.options.prefix.to_s}/feed.xml", title: "Atom Feed" %>
     <%= stylesheet_link_tag 'application'%>
+    <%= javascript_include_tag 'https://unpkg.com/material-components-web@latest/dist/material-components-web.min.js'%>
   </head>
   <body>
-    <%= partial 'partials/navbar' %>
-    <div id="main" role="main">
-      <%= yield %>
-    </div>
 
-    <%= partial 'partials/footer' %>
+   <div class="posted-wrapper">
+    <section class="posted">
+        <%= yield %>
+        <%= link_to "Back", "/" %>
+    </section>
+   </div>
+
   </body>
 </html>

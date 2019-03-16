@@ -1,0 +1,20 @@
+@import "https://unpkg.com/material-components-web@latest/dist/material-components-web.min.css";
+@import url('https://fonts.googleapis.com/css?family=Montserrat');
+
+@import "./hero/hero.scss";
+@import "./posts/posts.scss";
+@import "./posted/posted.scss";
+@import "./aside/aside.scss";
+@import "./tags/tags.scss";
+@import "./navbar/navbar.scss";
+
+* {
+    margin: 0;
+    padding: 0;
+}
+
+html, body {
+    height: 100%;
+    font-family: 'Montserrat', sans-serif;
+    color: #363636;
+}
