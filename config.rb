@@ -49,6 +49,9 @@ end
 
 activate :directory_indexes
 activate :livereload
+activate :syntax, :line_numbers => true
+set :markdown_engine, :redcarpet
+set :markdown, :fenced_code_blocks => true, :smartypants => true
 
 page "/feed.xml", layout: false
 # Reload the browser automatically whenever files change
