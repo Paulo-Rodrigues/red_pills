@@ -60,11 +60,11 @@ page "/feed.xml", layout: false
 # end
 
 # Methods defined in the helpers block are available in templates
-# helpers do
-#   def some_helper
-#     "Helping"
-#   end
-# end
+helpers do
+  def truncation(string)
+    string.length > 50 ? "#{string[0..50]}..." : string
+  end
+end
 
 # Build-specific configuration
 configure :build do
