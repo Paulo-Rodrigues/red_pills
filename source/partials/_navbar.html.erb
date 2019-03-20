@@ -3,3 +3,12 @@
   <span class="hamburger"></span>
   <span class="hamburger"></span>
 </div>
+
+<nav class="mobile-nav">
+  <h1 class="mobile-nav__title">Tags <h1>
+  <ul class="mobile-nav__items">
+      <% blog.tags.each do |tag, articles| %>
+          <li class="mobile-nav__item"><%= link_to "#{tag} (#{articles.size})", tag_path(tag) %></li>
+        <% end %>
+  </ul>
+</nav>

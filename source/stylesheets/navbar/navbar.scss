@@ -1,5 +1,5 @@
 .nav-menu {
-    background-color: #e2dfdf;
+    background-color: rgba(226, 223, 223, 0.541);
     height: 60px;
     width: 60px;
     border-radius: 50px;
@@ -12,11 +12,11 @@
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    box-shadow: 0 0 0 0 #e2dfdf, 0 0 0 0 #e2dfdf;
+    box-shadow: 0 0 0 0 rgba(226, 223, 223, 0.541), 0 0 0 0 rgba(226, 223, 223, 0.541);
     transition: box-shadow 1s ease-in-out;
 
     &:hover {
-        box-shadow: 0 0 0 8px #e2dfdf, 0 0 0 8px #e2dfdf;
+        box-shadow: 0 0 0 8px rgba(226, 223, 223, 0.541), 0 0 0 8px rgba(226, 223, 223, 0.541);
     }
 }
 
@@ -30,4 +30,56 @@
 
 #menu-hamburger {
     display: none;
+}
+
+.backdrop {
+    position: fixed;
+    display: none;
+    top: 0;
+    left: 0;
+    z-index: 100;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.5);
+}
+
+.mobile-nav {
+    display: none;
+    position: fixed;
+    z-index: 101;
+    top: 0;
+    left: 0;
+    background: #fff;
+    width: 60%;
+    height: 100vh;
+}
+
+.mobile-nav__items {
+    width: 90%;
+    height: 100%;
+    list-style-type: none;
+    margin: 10% auto;
+    padding: 0;
+    text-align: center;
+}
+
+.mobile-nav__item {
+    margin: 1rem 0;
+}
+
+.mobile-nav__item a {
+    font-size: 1.5rem;
+    color: rgb(2, 207, 207);
+    text-decoration: none;
+    padding: 5px;
+
+    &:hover {
+        background: rgb(214, 214, 214);
+    }
+}
+
+.mobile-nav__title {
+    text-align: center;
+    padding: 10px;
+    margin-top: 10px;
 }

@@ -11,10 +11,13 @@
   </head>
   <body>
     <%= partial 'partials/navbar' %>
+    <div class="backdrop" ></div>
     <div id="main" role="main">
       <%= yield %>
     </div>
 
     <%= partial 'partials/footer' %>
+
+    <%= javascript_include_tag 'navbar' %>
   </body>
 </html>
