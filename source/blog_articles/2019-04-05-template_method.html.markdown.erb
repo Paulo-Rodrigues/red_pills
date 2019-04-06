@@ -1,0 +1,188 @@
+---
+title : "Template Method"
+tags: [design-patterns, ruby]
+date: 05-04-2019
+layout: post
+---
+
+# Template Method
+
+Template Method é um Behavioral Pattern (padrão de comportamento). O GOF(gang of four) define o Template method da seguinte forma:
+
+> "Defina o esqueleto de um algoritmo em uma operação, passe alguns passos para subclasses. Template Method permite que subclasses redefinam certos passos de um algoritmo sem mudar a estrutura desse algoritmo."
+
+Pense num cenário onde você possua uma parte de código realmente complexa. Caso nada nunca necessite mudar, então não seria exatamente um problema. Mas imagine que algo bem no meio desse algoritmo necessite variar seu comportamento, algumas vezes fará isto, outras vezes fará aquilo.
+
+Usaremos como exemplo uma classe responsável por gerar um relatório. Esse relatório deve ser formatado em HTML. algo assim:
+
+```ruby
+    class Report
+      def initialize
+        @title = 'Montly Report'
+        @body = ['Good news', 'Bad news']
+      end
+
+      def output_report
+        puts('<html>')
+        puts('  <head>')
+        puts("    <title>#{@title}</title>")
+        puts('  </head>')
+        puts('  <body>')
+        @body.each do |text|
+          puts("    <p>#{text}</p>")
+        end
+        puts('  </body>')
+        puts('</html>')
+      end
+    end
+
+    report = Report.new
+    report.output_report
+```
+
+Se nada mudar, isso seria o suficiente. Mas digamos que agora, além de gerar o output em HTML, você tenha recebido uma demanda para que sejam gerados relatórios em Plain Text.
+
+Uma possibilidade(não muito elegante!) seria resolver esse problema da maneira mais simplista possível, algo nessa linha:
+
+```ruby
+    class Report
+      def initialize
+        ...
+      end
+
+      def output_report(format)
+        if format == :plain
+          puts("****#{@title}****")
+        elsif format == :html
+          puts('<html>')
+          puts('  <head>')
+          puts("    <title>#{@title}</title>")
+          puts('  </head>')
+          puts('  <body>')
+        else
+          raise "Unknown format: #{format}"
+        end
+
+        @body.each do |text|
+          if format == :plain
+            puts(text)
+          else
+            puts("<p>#{text}</p>")
+          end
+        end
+
+        if format == :html
+          puts('</body>')
+          puts('</html>')
+        end
+      end
+    end
+```
+
+Ok, isso pode funcionar, mas vamos combinar... Isso está uma bagunça.
+
+Se isso continuar a cada vez que surgir um novo formato de relatório, nossa classe ficará incompreensível.
+
+Então, como podemos proceder ?
+
+## Separe o que muda do que permanece igual
+
+Em orientação a objetos podemos definir uma classe base abstrata que contenha um método principal que faça a chamada aos passos necessários para termos a tarefa concluida, deixando a implementação de cada passo para as respectivas subclasses (HTMLReport, PlainTextReport, etc...). vejamos:
+
+```ruby
+    class Report
+      def initialize
+        @title = 'Montly Report'
+        @body = ['Good news', 'Bad news']
+      end
+
+      def output_report
+        output_start
+        output_head
+        output_body_start
+        output_body
+        output_body_end
+        output_end
+      end
+
+      def output_body
+        @body.each do |text|
+          output_line(text)
+        end
+      end
+
+      def output_start; end
+
+      def output_head;
+        raise 'Called abstract method: output_head'
+      end
+
+      def output_body_start; end
+
+      def output_line(line);
+        raise 'Called abstract method: output_line'
+      end
+
+      def output_body_end; end
+
+      def output_end; end
+
+    end
+```
+
+De fato essa não é realmente uma classe abstrata, Podemos falar teoricamente em classes e métodos abstratos, mas a realidade é que Ruby não suporta isso. O mais próximo que podemos realizar seria fazer os métodos levantarem excessões, como em output_head e output_line, quando os métodos fossem chamados sem a sua devida implementação pela subclasse.
+
+Porém repare que não faria muito sentido em nosso caso obrigar uma subclasse a implementar um método do qual não necessita, com isso em mente, mantemos o corpo dos métodos com uma implementação básica (corpo vazio). Assim PlainTextReport e HTMLReport implementam apenas o que necessitam, vejamos como ficam essas subclasses:
+
+```ruby
+    class HTMLReport < Report
+      def output_start
+        puts('<html>')
+      end
+
+      def output_head
+        puts('  <head>')
+        puts("    <title>#{@title}</title>")
+        puts('  </head>')
+      end
+
+      def output_body_start
+        puts('  <body>')
+      end
+
+      def output_line(text)
+        puts("    <p>#{text}</p>")
+      end
+
+      def output_body_end
+        puts('  </body>')
+      end
+
+      def output_end
+        puts('</html>')
+      end
+    end
+
+    class PlainTextReport < Report
+      def output_head
+        puts("****#{@title}****")
+      end
+
+      def output_line(text)
+        puts(text)
+      end
+    end
+
+    report = HTMLReport.new
+    report.output_report
+
+    report = PlainTextReport.new
+    report.output_report
+```
+A idéia por trás do Template Method Patter é a construção de uma classe abstrata com um método esqueleto (template method). Esse método é responsável por cuidar dos processos que variam, mas ele o faz atraves de chamadas a métodos abstratos que devem ser implementados pelas classes concretas. Nós apenas precisamos escolher a variação de que necessitamos a partir de alguma subclasse.
+
+### Referências
+
+GAMMA, Erich...[et al]. **Design Patterns: elements of reusable object-oriented software.** Boston. Addison-Wesley. 1995.
+
+OLSEN, Russ. **Design Patterns in Ruby.** Boston. Addison-Wesley. 2008

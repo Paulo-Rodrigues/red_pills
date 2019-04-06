@@ -1,0 +1,165 @@
+---
+title : "Extract Method"
+tags: [clean-code, refactoring, ruby]
+date: 04-04-2019
+layout: post
+---
+
+# Extract Method
+
+Extract method é um dos métodos mais comuns de refatoração(refectoring) que podem ser aplicados.
+Geralmentre quando temos um método que é muito longo, que possui algum comentario para que seu proposito seja melhor descrito, provavelmente seja um sintoma de que esse método deveria ser fragmentado em partes menores e mais descritivas de seu propósito, através de um bom nome.
+
+Exemplo:
+
+```ruby
+    
+    def print_owing(amount)
+      print_banner
+      puts "name: #{@name}"
+      puts "amount: #{amount}"
+    end
+
+    #extracted 
+    def print_owing(amount)
+      print_banner
+      print_details(amount)
+    end
+
+    def print_details(amount)
+      puts "name: #{@name}"
+      puts "amount: #{amount}"
+    end
+```
+## Como funciona
+* crie um novo método e o nomeie de acordo com see propósito, ou seja, **_o que ele faz_** e não como ele faz.
+
+* Copie o código extraido do método original para esse novo método.
+
+* Procure no código extraido por referencias a quaisquer variáveis que sejam locais ao escopo do método original.
+
+* Caso necessário use Replace Temp with Query ou Split Temporary Variable (outro artigo sobre esses temas em breve)
+
+* Substitua o código extraido no método original por uma chamada ao novo método.
+
+* Teste
+
+Exemplo: 
+
+```ruby
+    def print_owing
+      outstanding = 0.0
+
+      #print banner
+      puts "**********************"
+      puts "***Customer Owes******"
+      puts "**********************"
+
+      #calculate outstanding
+      @orders.each do |order|
+        outstanding += order.amount
+      end
+
+      #print details
+      puts "name: #{@name}"
+      puts "amount: "{outstanding}"
+    end
+```
+
+Comentarios podem indeicar pedaços de métodos que podem ser extraidos, inclusive commentarios podem indicar possíveis nomes para os novos métodos.
+
+> Para extrair o método que desenha o banner é simples, apenas copie e cole o código no novo método. O problema real são as variáveis locais. 
+O caso mais simples é quando as variáveis são de lidas mas não modificadas. Neste caso podemos passa-las como parâmetro.
+
+``` ruby
+    def print_owing
+        outstanding = 0.0
+
+        print_banner
+
+        #calculate outstanding
+        @orders.each do |order|
+        outstanding += order.amount
+        end
+
+        print_details(outstanding)
+    end
+
+    def print_details(outstanding)
+      puts "name: #{@name}"
+      puts "amount: #{outstanding}"
+    end
+
+    def print_banner
+      puts "**********************"
+      puts "***Customer Owes******"
+      puts "**********************"
+    end
+```
+## Trabalhando com variáveis locais
+
+No caso mais simples onde as variáveis são temporárias, podemos proceder da seguinte forma (extraindo o cálculo):
+
+```ruby
+    def print_owing
+      print_banner
+      outstanding = calculate_outstanding
+      print_details(outstanding)
+    end
+
+    def print_outstanding
+      outstanding = 0.0
+      @orders.each do |order|
+        outstanding += order.amount
+      end
+      outstanding
+    end
+
+    # ou de forma mais simples
+
+    def print_outstanding
+      @orders.reduce(0.0) { |result, order| result + order.amount}
+    end
+
+    ...
+```
+
+Nesse caso a variavel so pode ser inicializada no escopo do novo método, mas digamos que outras coisas podem acontecer a esta variável. Nesse caso precisamos passar o valor prévio como parametro, algo assim:
+
+```ruby
+    def print_owing(previous_amount)
+      outstanding = previous_amount * 1.2
+      print_banner
+      #calculate outstanding
+      @orders.each do |order|
+        outstanding += order.amount
+      end
+      print_details(outstanding)
+    end
+
+    #extraindo
+
+    def print_owing(previous_amount)
+      outstanding = previous_amount * 1.2
+      print_banner
+      outstanding = calculate_outstanding(outstanding)
+      print_details(outstanding)
+    end
+
+    def calculate_outstanding(initial_value)
+      @orders.reduce(initial_value) { |result, order| result + order.amount}
+    end
+
+    #podemos melhorar esse método da seguinte forma
+
+    def print_owing(previous_amount)
+      print_banner
+      outstanding = calculate_outstanding(previous_amount * 1.2)
+      print_details
+    end
+```
+Variáveis podem dificultar muito o processo de extração de métodos, nesses casos, outras técnicas de refactoring são necessárias, como a já mencionada Replace Temp with Query. 
+Mas esse será assunto para um outro artigo.
+
+### Referencias
+ FIELDS, Jay; HARVIE, Shane; FOWLER, Martin; BECK, Kent. Refactoring Ruby Edition. Boston: Addison-Wesley, 2009
