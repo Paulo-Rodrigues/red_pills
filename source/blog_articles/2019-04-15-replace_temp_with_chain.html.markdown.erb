@@ -1,0 +1,105 @@
+---
+title : "Replace Temp with Chain"
+tags: [refactoring, clean-code, ruby]
+date: 15-04-2019
+layout: post
+---
+
+Podemos substituir chamadas de métodos em multipĺas linhas por chamadas em cadeia(chain), provendo assim uma interface mais fluente para essas chamadas.  Exemplo:
+
+```ruby
+  mock = Mock.new
+  expectation = mock.expects(:a_method_name)
+  expectation.with("arguments")
+  expectation.returns([1, :array])
+
+  # Pderia ficar assim:
+  mock = Mock.new
+  mock.expects(:a_method_name).with("arguments").returns([1, :array])
+```
+
+Devemos salientar que Replace Temp with Chain, tem por objetivo melhorar a fluência em **UM objeto**, sendo assim, **NÃO se pode chamar objetos subordinados**.
+
+## Como funciona
+
+* Retorn **self** dos métodos que você quer que sejam encadeados.
+
+* Teste
+
+* Remova as variaveis locais e encadeie as chamadas dos métodos.
+
+## Exemplo
+
+Em uma lib de criação de elementos HTML, temos a seguinte classe que cria um select e adicionar opções a esse select
+
+```ruby
+  class Select
+    def options
+      @options ||= []
+    end
+
+    def add_option(arg)
+      @options << arg
+    end
+  end
+
+  select = Select.new
+  select.add_option('option1')
+  select.add_option('option2')
+  select.add_option('option3')
+```
+
+O primeiro passo deve ser adicionar um método que cria uma instancia e adicion uma opção.
+
+```ruby
+  class Select
+    def self.with_option(option)
+      select = self.new
+      select.options << option
+      select
+    end
+    ...
+  end
+
+  select = Select.with_option('op')
+  select.add_option('op2')
+```
+
+Posteriormente a isso, mude o método que adiciona uma opção para que retorne self, de modo que assim posssa ocorrer o encadeamento.
+
+```ruby
+  class Select
+   #...
+     def add_option(arg)
+       options << arg
+       self
+     end
+   end
+
+   select = Select.with_option('opt1').add_option('opt2').add_option('opt3')
+```
+
+Adicionalmente, renomeamos o método add_option para algo que facilite a fluência, como 'and'.
+
+```ruby
+  class Select
+    def self.with_option(option)
+      select = self.new
+      select.options << option
+      select
+    end
+
+    def options
+      @options ||= []
+    end
+
+    def and(arg)
+      options << arg
+      self
+    end
+  end
+
+  select = Select.with_option('opt1').and('opt2').and('opt3')
+```
+### Referencias
+ FIELDS, Jay; HARVIE, Shane; FOWLER, Martin; BECK, Kent. Refactoring Ruby Edition. Boston: Addison-Wesley, 2009
