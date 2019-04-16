@@ -1,0 +1,101 @@
+---
+title : "Replace Temp with Query"
+tags: [refactoring, clean-code, ruby]
+date: 16-04-2019
+layout: post
+---
+
+
+Digamos que você esteja usando uma variável temporária em que seu valor seja atribuido ao resultado de uma expressão. O problema nesse caso, está no fato de essa variável ser local e temporária, dependente do contexto em que foi definida e no qual ela é usada. Ao usar Replace Temp with Query, qualquer método da classe poderá obter a informação.
+
+Replace Temp with Query também é uma passo importante no Extract Method, ja que variáveis locais dificultam o trabalho de extração.
+
+## Como funciona
+
+* Extraia o lado direito da atribuição e para um método(inicialmente um meodo privado).
+
+* Garanta que o método extraido não possua efeitos colaterais, que não modifique qualquer objeto.
+
+* Teste
+
+## Exemplo
+
+```ruby
+  def price
+    base_price = @quantity * @item_price
+    if base_price > 1000
+      discount_factor = 0.95
+    else
+      discount_factor = 0.98
+    end
+    base_price * discount_factor
+  end
+```
+* Primeiro extraimos o lado direito da atribuição:
+
+```ruby
+  def price
+    a_base__price = base_price
+    if a_base_price > 1000
+      discount_factor = 0.95
+    else
+      discount_factor = 0.98
+    end
+    a_base_price * discount_factor
+  end
+
+  def base_price
+    @quantity * @item_price
+  end
+```
+* Teste
+
+Em seguida remova as referências a essa temp
+
+```ruby
+  def price
+    if base_price > 1000
+      discount_factor = 0.95
+    else
+      discount_factor = 0.98
+    end
+    base_price * discount_factor
+  end
+  
+  def base_price
+    @quantity * @item_price
+  end
+```
+Com essa mesma mecânica em mente, podemos extrair o **discount_factor**, vejamos como fica:
+
+```ruby
+  def price
+    a_discount_factor = discount_factor
+    base_price * a_discount_factor
+  end
+
+  def discount_factor
+    base_price > 1000 ? 0.95 : 0.98
+  end
+```
+
+* Teste novamente
+
+O método **price**, então, ficará da seguinte forma:
+
+```ruby
+  def price
+    base_price * discount_factor
+  end
+  
+  def base_price
+    @quantity * @item_price
+  end
+
+  def discount_factor
+    base_price > 1000 ? 0.95 : 0.98
+  end
+
+```
+### Referencias
+ FIELDS, Jay; HARVIE, Shane; FOWLER, Martin; BECK, Kent. Refactoring Ruby Edition. Boston: Addison-Wesley, 2009
