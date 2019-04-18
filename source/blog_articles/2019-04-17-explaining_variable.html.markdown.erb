@@ -1,0 +1,96 @@
+---
+title : "Expaining Variable"
+tags: [refactoring, clean-code, ruby]
+date: 17-04-2019
+layout: post
+---
+
+Certas expressões podem se tornar bastante complexas e difíceis de ler. Nessas situações, variáveis temporárias podem ser de boa ajuda ao quebrar essas expressões em uma expressão mais declarativa de sua intenção.
+
+Explaining Variable pode ser especialmente valiosa quando temos lógica condicional.
+
+## Como funciona
+
+* declare um variável temporária como o resultado de uma expressão complexa.
+
+* Substitua a expressão pela nova temp
+
+* Test
+
+* Faça o mesmo para outras partes da expressão.
+
+## Exemplo 1:
+
+```ruby
+  if (plataform.upcase.index("MAC") &&
+      browser.upcase.index("IE") &&
+      initialized? &&
+      resize > 0)
+      #do something
+  end
+
+  # Ficaria algo nesse sentido:
+
+  is_mac_os = plataform.upcase.index("MAC")
+  is_ie_browser = browser.upcase.index("IE")
+  was_resised = resize > 0
+
+  if (is_mac_os && is_ie_browser && initialized? &&was_resized)
+    #do something
+  end
+```
+
+## Exemplo 2:
+
+Uma calculo simples
+
+```ruby
+  def price
+    #price is base price - quantity discount + shipping
+    return @quantity * @item_price - 
+    [0, @quantity - 500].max * @item_price * 0.05 +
+    [@quantity * @item_price * 0.1, 100.0].min
+  end
+
+  #fica assim
+
+  def price
+    base_price = @quantity * @item_price
+    quantity_discount = [0,@quantity - 500].max * @item_price * 0.05
+    shipping = [base_price * 0.1, 100.0].min
+
+    return base_price - quantity_discount + shipping
+  end
+```
+
+## Usando Extract Method
+
+```ruby
+  def price
+    #price is base price - quantity discount + shipping
+    return @quantity * @item_price - 
+    [0, @quantity - 500].max * @item_price * 0.05 +
+    [@quantity * @item_price * 0.1, 100.0].min
+  end
+
+  #fica assim
+
+  def price
+    base_price - quantity_discount + shipping
+  end
+
+  def base_price
+    @quantity * @item_price
+  end
+
+  def quantity_discount
+    [0,@quantity - 500].max * @item_price * 0.05
+  end
+
+  def shipping
+    [base_price * 0.1, 100.0].min
+  end
+```
+
+### Referencias
+ FIELDS, Jay; HARVIE, Shane; FOWLER, Martin; BECK, Kent. Refactoring Ruby Edition. Boston: Addison-Wesley, 2009

@@ -1,0 +1,29 @@
+---
+title : "Split Temporary Variable"
+tags: [refactoring, clean-code, ruby]
+date: 18-04-2019
+layout: post
+---
+
+Digamos que você possua uma variável temporária declarada mais de uma vez, fora de um loop
+
+Faça uma tem variável para cada situação
+
+## Exemplo:
+
+```ruby
+  temp = 2 * (@height + @width)
+  puts temp
+  temp = @height + @width
+  puts temp
+
+  # fica assim
+
+  perimeter = 2 * (@height + @width)
+  puts perimeter
+  area = @height + @width
+  puts area
+```
+
+### Referencias
+ FIELDS, Jay; HARVIE, Shane; FOWLER, Martin; BECK, Kent. Refactoring Ruby Edition. Boston: Addison-Wesley, 2009
