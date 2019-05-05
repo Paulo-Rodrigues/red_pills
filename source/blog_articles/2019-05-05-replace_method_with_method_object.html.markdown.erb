@@ -1,0 +1,96 @@
+---
+title : "Replace Method with Method Object"
+tags: [refactoring, clean-code, ruby]
+date: 05-05-2019
+layout: post
+---
+
+Um método muito longo usa variaveis locais de maneira que aplicar o **extract method** seja impraticável.
+
+Você poderia tornar este método em seu próprio objeto, de modo que as variáveis locais se tornem variáveis de instância desse objeto. Depois poderiamos decompor esse método em outros métodos no mesmo objeto.
+
+A dificuldade de decompor métodos está associada ao uso de variaveis locais. Replace Temp with Query pode ajudar, mas existem casos onde percebemos que quebrar esse método se torna ipraticável.
+
+## Como Funciona
+
+* Crie uma nova classe
+
+* Faça um construtor que pegue todos os params
+
+* Coloque nessa nova classe um método chamado **compute**
+
+* Copie o corpo do método original no método compute.
+
+* Teste
+
+* Substitua o método antigo por um que instancie esse novo objeto e chame o método **compute** nele
+
+## Exemplo
+
+Obs: O método não necessariamente necessitaria esse refactoring, é apenas como exemplo mesmo.
+
+```ruby
+  class Account
+    def gamma(input_val, quantity, year_to_date)
+      important_val1 = (input_val * quantity) + delta
+      important_val2 = (input_val * year_to_date) + 100
+      if (year_to_date - important_val1) > 100
+        important_val2 -= 20
+      end
+      important_val3 = important_val2 * 7
+      important_val3 - 2 * important_val1
+    end
+  end
+```
+
+Tornar esse método em uma classe consiste em, criar a classe, prover um atributo para o objeto original e um atributo para cada parâmetro e variáveis temporárias.
+
+```ruby
+  class Gamma
+    attr_reader :account, :input_val, :quantity,
+                :year_to_date, :important_val1,
+                :important_val2, :important_val3
+            
+    # adicione o construtor
+    def initialize(account, input_val_arg, quantity_arg, year_to_date_arg)
+      @account = account
+      @input_val = input_val
+      @quantity = quantity_arg
+      @year_to_date = year_to_date_arg
+    end
+
+    def compute
+      @important_val1 = (input_val * quantity) + @account.delta
+      @important_val2 = (input_val * year_to_date) + 100
+      if (year_to_date - important_val1) > 100
+        @important_val2 -= 20
+      end
+      @important_val3 = important_val2 * 7
+      @important_val3 - 2 * important_val1
+
+    end
+
+    # agora modifique o método origem para que este delegue ao novo método
+
+    def gamma(input_val, quantity, year_to_date)
+      Gamma.new(self, input_val, quantity, year_to_date).compute
+    end
+
+    # A vantagem é que agora pode- se aplicar o extract method no método compute, por exemplo:
+
+    def compute
+      @important_val1 = (input_val * quantity) + @account.delta
+      @important_val2 = (input_val * year_to_date) + 100
+
+      important_thing
+
+      @important_val3 = important_val2 * 7
+      @important_val3 - 2 * important_val1
+    end
+
+    def important_thing
+      if (year_to_date - important_val1) > 100
+        @important_val2 -= 20
+      end
+    end
+```
