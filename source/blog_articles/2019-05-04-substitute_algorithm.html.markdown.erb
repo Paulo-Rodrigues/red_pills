@@ -1,0 +1,46 @@
+---
+title : "Substitute Algorithm"
+tags: [refactoring, clean-code, ruby]
+date: 04-05-2019
+layout: post
+---
+
+O objetivo do **Substitute Algorithm** é o de trocar aquilo que está complicado por uma forma mais clara de expressão.
+
+Então se desejamos algo mais claro, poderiamos substituir o corpo do algoritmo antigo por um novo algoritmo
+
+## Como Funciona
+
+* Prepare seu algoritmo alternativo
+
+* Teste seu novo algoritmo contra seus testes prévios, se os resultados forem os mesmos anteriores, seu algoritmo está pronto.
+
+## Exemplo
+
+```ruby
+  def found_friends(people)
+    friends = []
+    people.each do |person|
+      if (person == 'Joe')
+        friends << 'Joe'
+      end
+      if (person == 'Meggie')
+        friends << 'Meggie'
+      end
+      if (person == 'Paul')
+        friends << 'Paul'
+      end
+    end
+    friends
+  end
+
+  # simplificando o algoritmo
+
+  def found_friends(people)
+    people.select do |person|
+      %w(Joe Meggie Paul).include?(person)
+    end
+  end
+
+```
+

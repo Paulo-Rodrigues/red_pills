@@ -23,6 +23,10 @@
     min-height: 120px;
 }
 
+.footer {
+    grid-column: 1 / -1;
+}
+
 .footer-tags {
     padding: 10px;
     margin: 2rem;
