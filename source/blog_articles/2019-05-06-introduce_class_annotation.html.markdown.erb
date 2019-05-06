@@ -1,0 +1,55 @@
+---
+title : "Introduce Class Annotation"
+tags: [refactoring, clean-code, ruby]
+date: 06-05-2019
+layout: post
+---
+
+Com Introduce Class Annotation é possível dar maior clareza a intenção e propósito de seu código.
+
+Leve em consideração um caso onde um método seja tão comum que seus detalhes de implementação possam ser escondidos com segurança.
+
+## Como Funciona
+
+* Declare uma assinatura para seu class annotation, na classe apropriada.
+
+* Converta o método original em um método de classe, fazendo mudanças necessárias a esse propósito.
+
+* Teste
+
+* Se puder use **Extract Module** e Teste novamente.
+
+## Exemplo
+
+Considere que temos uma classe SearchCriteria, que recebe um hash como parâmetro.
+
+```ruby
+  class SearchCriteria
+    def initialize(term)
+      @author_id = term[:author_id]
+      @publisher_id = term[:publisher_id]
+      @isbn = term[:isbn]
+    end
+```
+Poderiamos então extrair um módulo para que seja utilizado na classe. Nós definiremos o método initialize dinamicamente para que possamos lidar com a hash de parâmetros.
+
+```ruby
+  module CustomInitializers
+
+    defhas_initializer(*attribute_names)
+      define_method(:initialize) do |args|
+        data = args.first || {}
+        attribute_names.each do |attribute_name|
+          instance_variable_set("@#{attribute_name}", data[attribute_name])
+        end
+      end
+    end
+  end
+
+    Class.send :include, CustomInitializers
+
+    Class SearchCriteria
+      has_initializer :author_id, :publisher_id, :isbn
+  ```
+### Referencias
+ FIELDS, Jay; HARVIE, Shane; FOWLER, Martin; BECK, Kent. Refactoring Ruby Edition. Boston: Addison-Wesley, 2009
