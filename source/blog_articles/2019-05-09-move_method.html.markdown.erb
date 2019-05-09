@@ -1,0 +1,100 @@
+---
+title : "Move Method"
+tags: [refactoring, clean-code, ruby]
+date: 09-05-2019
+layout: post
+---
+
+Usa-se Move Method quando um método é usado mais por outra classe do que aquela em que este método foi definido. Também podemos aplica-lo quando uma classe possui muito comportamento em si própria ou quando classes ficam muito acopladas.
+
+Movendo métodos onde eles serão melhor necessários torna as classes mais simples, além de melhorar a definição de responsabilidades de uma classe.
+
+## Como funciona
+
+* Procure por tadas as features usadas pelo método original definido na classe de origem.
+
+* Veja na superclass(se houver) se não existe alguma definição prévia, caso exista, move method não será possível.
+
+* defina o método na classe alvo.
+
+* Copie o código original fazendo as adaptações necessárias ao novo contexto(nova classe).
+
+* O método originla agora deverá delegar ao método novo suas obrigações.
+
+* Teste
+
+* Decida se mantém o método original delegando ao novo ou se ele será removido.
+
+* Se remover o método antigo, substitua  referências a ele por referencias ao novo método.
+
+* Teste
+
+## Exemplo
+
+```ruby 
+  class Account
+    def overdraft_charge
+      if @account_type.premium?
+        result = 10
+        result += (@days_overdrawn - 7) * 0.85 if @days_overdrawn > 7
+        result
+      else
+        @days_overdrawn * 1.75
+      end
+    end
+
+    def bank_charge
+      result = 4.5
+      result += overdraft_charge if @days_overdrawn > 0
+      result
+    end
+  end
+```
+Digamos que existirão varios tipos de conta, cada um calculando seu próprio **overdraft_charge**. neste caso necessitamos mover o método para AccountType.
+
+Leve em consideração o que o método usa (@days_overdrawn).
+
+```ruby
+  class AccountType
+    def overdraft_charge(days_overdrawn)
+      if premium?
+        result = 10
+        result += (days_overdrawn - 7) * 0.85 if days_overdrawn > 7
+        result
+      else
+        days_overdrawn * 1.75
+      end
+    end
+  end
+
+  class Account
+    def overdraft_charge
+      @account_type.overdraft_overcharge(@days_overdrawn)
+    end
+  end
+```
+
+Aqui ja podemos testar. Caso queiramos remover o método antigo, precisamos primeiramente modificar outros lugares que estejam fazendo chamadas ao método antigo.
+
+```ruby
+  class Account
+    def bank_charge
+      result = 4.5
+      result += overdraft_charge if @days_overdrawn > 0
+      result
+    end
+  end
+   # fica assim
+
+   class Account
+     def bank_charge
+      result = 4.5
+      if @days_overdrawn > 0
+        result += @account_type.overdraft_charge(@days_overdrawn)
+      end
+      result
+    end
+```
+
+### Referencias
+ FIELDS, Jay; HARVIE, Shane; FOWLER, Martin; BECK, Kent. Refactoring Ruby Edition. Boston: Addison-Wesley, 2009
