@@ -1,0 +1,153 @@
+---
+title : "Active Record [Part 1]"
+tags: [ruby, ruby on rails, active record]
+date: 10-05-2019
+layout: post
+---
+
+Nesta série de artigos, trarei alguns pontos interessantes do Active Record, o framework ORM usado principalmente no Rails.
+
+Começarei apresentando algumas queries de procura (searching, finding) e iremos incrementando em complexidade a partir disto.
+
+Partirei do pressuposto que a pessoa interessada neste artigo ja possua familiaridade com o mais básico, como, criar um novo projeto rails, criar o banco, rodar uma migration, etc. De modo que não darei maiores explicações sobre comandos básicos que usarei, como **rails db:migrate ou rails generate ...**
+
+Para este artigo criei um novo app Rails, apenas como container mesmo, de modo que você poderá lhe dar o nome que desejar, e criarei alguns models básicos no decorrer dessa série.
+
+Abra o terminal e digite os comandos:
+
+```ruby 
+rails new your_project_name
+rails generate model Album name release_year:integer
+rails db:migrate
+```
+Adicione a Gem faker no Gemfile
+
+```ruby
+group :development, :test do 
+  gem 'faker'
+  ...
+end
+```
+
+Instale a Gem 
+```ruby
+bundle install
+```
+
+A seguir, criaremos um seed com o seguinte conteúdo.
+
+```ruby
+p 'seeding'
+
+100.times do 
+  Album.create(
+      name: Faker::Music.album,
+      release_year: Faker::Number.between(1970, 2010)
+  )
+  p Album.last.name
+end
+
+p 'DONE!'
+```
+Em seguida:
+
+```ruby 
+rails db:seed
+```
+## Find
+
+A query mais simples de procura é procurando pela chave primária, no caso do active record esta é o campo **id**, que é adicionado automaticamente pelo active record toda vez que um novo objeto é criado. Neste caso sabendo o id de um objeto, poderemos procurar por objetos individuais, ou varios.
+
+Abra o console do rails
+
+```ruby
+rails c
+```
+
+Em seguida:
+
+```ruby
+Running via Spring preloader in process 30343
+Loading development environment (Rails 5.2.3)
+> Album.find(1)
+  Album Load (15.5ms)  SELECT  "albums".* FROM "albums" WHERE "albums"."id" = ? LIMIT ?  [["id", 1], ["LIMIT", 1]]
+=> #<Album id: 1, name: "Let's Talk About Love", release_year: 1977, created_at: "2019-05-10 13:48:55", updated_at: "2019-05-10 13:48:55">
+```
+
+Aqui, conseguimos encontrar o objeto (record) de id 1.
+
+Caso queiramos encontrar mais de um objeto, passamos seus ids em um array como parâmetro.
+
+```ruby
+> Album.find([2,4,8])
+  Album Load (3.0ms)  SELECT "albums".* FROM "albums" WHERE "albums"."id" IN (?, ?, ?)  [["id", 2], ["id", 4], ["id", 8]]
+=> [#<Album id: 2, name: "HIStory: Past", release_year: 2004, created_at: "2019-05-10 13:48:55", updated_at: "2019-05-10 13:48:55">, #<Album id: 4, name: "Viva la Vida or Death and All His Friends", release_year: 1977, created_at: "2019-05-10 13:48:55", updated_at: "2019-05-10 13:48:55">, #<Album id: 8, name: "The Dark Side of the Moon", release_year: 1977, created_at: "2019-05-10 13:48:56", updated_at: "2019-05-10 13:48:56">]
+```
+
+Neste caso veja que Album.find(1) retorna o objeto de id 1 em si, enquanto Album.find([2,4,8]) retorna um array com os objetos. Se você deseja sempre retornar um array, então deve-se sempre passar um array como parâmetro.
+
+```ruby
+> Album.find([1])
+  Album Load (0.7ms)  SELECT  "albums".* FROM "albums" WHERE "albums"."id" = ? LIMIT ?  [["id", 1], ["LIMIT", 1]]
+=> [#<Album id: 1, name: "Let's Talk About Love", release_year: 1977, created_at: "2019-05-10 13:48:55", updated_at: "2019-05-10 13:48:55">]
+```
+
+Tenah em mente que o método **find** gera uma excessão se o id que você estiver procurando não existir no banco. Tenhamos isso em mente.
+
+## Where
+
+Com o método **where**, podemos procurar por valores específicos de parâmetros. Faremos isso para procurar por albums lançados no ano ed 1970
+
+```ruby
+> Album.where(release_year: 1971)
+  Album Load (0.9ms)  SELECT  "albums".* FROM "albums" WHERE "albums"."release_year" = ? LIMIT ?  [["release_year", 1971], ["LIMIT", 11]]
+=> #<ActiveRecord::Relation [#<Album id: 13, name: "No Jacket Required", release_year: 1971, created_at: "2019-05-10 13:48:56", updated_at: "2019-05-10 13:48:56">, #<Album id: 57, name: "Back in Black", release_year: 1971, created_at: "2019-05-10 13:49:00", updated_at: "2019-05-10 13:49:00">, #<Album id: 75, name: "The Woman in Me", release_year: 1971, created_at: "2019-05-10 13:49:02", updated_at: "2019-05-10 13:49:02">]>
+```
+Neste caso, Active Record nos retorna um array contendo todos os albuns lançados no ano passado como parâmetro.
+
+Também podemos passar **Range** como parâmetro.
+
+```ruby
+> Album.where(release_year: 1970..1973)
+  Album Load (1.1ms)  SELECT  "albums".* FROM "albums" WHERE "albums"."release_year" BETWEEN ? AND ? LIMIT ?  [["release_year", 1970], ["release_year", 1973], ["LIMIT", 11]]
+=> #<ActiveRecord::Relation [#<Album id: 13, name: "No Jacket Required", release_year: 1971, created_at: "2019-05-10 13:48:56", updated_at: "2019-05-10 13:48:56">, #<Album id: 38, name: " Present and Future", release_year: 1973, created_at: "2019-05-10 13:48:58", updated_at: "2019-05-10 13:48:58">, #<Album id: 43, name: "Let's Talk About Love", release_year: 1973, created_at: "2019-05-10 13:48:59", updated_at: "2019-05-10 13:48:59">, #<Album id: 51, name: "Gold: Greatest Hits", release_year: 1973, created_at: "2019-05-10 13:49:00", updated_at: "2019-05-10 13:49:00">, #<Album id: 57, name: "Back in Black", release_year: 1971, created_at: "2019-05-10 13:49:00", updated_at: "2019-05-10 13:49:00">, #<Album id: 74, name: "Like a Virgin", release_year: 1970, created_at: "2019-05-10 13:49:02", updated_at: "2019-05-10 13:49:02">, #<Album id: 75, name: "The Woman in Me", release_year: 1971, created_at: "2019-05-10 13:49:02", updated_at: "2019-05-10 13:49:02">, #<Album id: 82, name: "I Dreamed a Dream", release_year: 1973, created_at: "2019-05-10 13:49:03", updated_at: "2019-05-10 13:49:03">, #<Album id: 93, name: "Let's Talk About Love", release_year: 1972, created_at: "2019-05-10 13:49:04", updated_at: "2019-05-10 13:49:04">]>
+```
+Podemos incrementar essa consulta especificando varios parâmetros, separados por vírgula.
+
+```ruby
+> Album.where(release_year: 1970..1973, id: 1..30)
+  Album Load (0.3ms)  SELECT  "albums".* FROM "albums" WHERE "albums"."release_year" BETWEEN ? AND ? AND "albums"."id" BETWEEN ? AND ? LIMIT ?  [["release_year", 1970], ["release_year", 1973], ["id", 1], ["id", 30], ["LIMIT", 11]]
+=> #<ActiveRecord::Relation [#<Album id: 13, name: "No Jacket Required", release_year: 1971, created_at: "2019-05-10 13:48:56", updated_at: "2019-05-10 13:48:56">]>
+```
+
+Ou um array de paramêtros
+
+```ruby
+> Album.where(release_year: [1970,1975])
+  Album Load (1.1ms)  SELECT  "albums".* FROM "albums" WHERE "albums"."release_year" IN (?, ?) LIMIT ?  [["release_year", 1970], ["release_year", 1975], ["LIMIT", 11]]
+=> #<ActiveRecord::Relation [#<Album id: 46, name: "Their Greatest Hits (1971–1975)", release_year: 1975, created_at: "2019-05-10 13:48:59", updated_at: "2019-05-10 13:48:59">, #<Album id: 74, name: "Like a Virgin", release_year: 1970, created_at: "2019-05-10 13:49:02", updated_at: "2019-05-10 13:49:02">]>
+
+> Album.where(release_year: [1970,1978]).count
+   (1.3ms)  SELECT COUNT(*) FROM "albums" WHERE "albums"."release_year" IN (?, ?)  [["release_year", 1970], ["release_year", 1978]]
+=> 2
+
+```
+O retorno de where sempre será um array (mesmo que seja um array vazio).
+
+Se queremos, digamos, o primeiro registro, precisamos combinar com o método first, por exemplo.
+
+```ruby
+> Album.where(release_year: [1970,1978]).count
+   (0.5ms)  SELECT COUNT(*) FROM "albums" WHERE "albums"."release_year" IN (?, ?)  [["release_year", 1970], ["release_year", 1978]]
+=> 2
+
+> Album.where(release_year: [1970,1978]).first
+  Album Load (0.8ms)  SELECT  "albums".* FROM "albums" WHERE "albums"."release_year" IN (?, ?) ORDER BY "albums"."id" ASC LIMIT ?  [["release_year", 1970], ["release_year", 1978], ["LIMIT", 1]]
+=> #<Album id: 74, name: "Like a Virgin", release_year: 1970, created_at: "2019-05-10 13:49:02", updated_at: "2019-05-10 13:49:02">
+
+```
+
+Continuaremos em um próximo artigo.
+
+### Referencias
+ WINTERMEYER, Stefan; Learn Rails 5.2. Bochum, Germany, Apress - 2018
