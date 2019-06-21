@@ -1,0 +1,110 @@
+---
+title : "Extract Class"
+tags: [ruby, refactoring]
+date: 19-06-2019
+layout: post
+---
+
+Classes costumam crescer na prática. Com esse crescimento podem haver dificuldades de se manter uma classes com uma única responsabilidade. Nessa situação você acaba com uma classe que está fazendo o trabalho de outra.
+
+Crie uma nova classe e mova os campos e métodos necessários da classe anterior para a nova classe.
+
+## Como funciona
+
+* Decida como você fará a separação de responsabilidades.
+
+* Crie a nova classe com a devida responsabilidade.
+
+* Use Move field nos campos necessários.
+
+* Use Move Method nos campos necessários.
+
+* Teste após cada mudança.
+
+## Exemplo
+
+```ruby
+  class Person
+    attr_reader :name
+    attr_accessor :office_area_code, :office_number
+
+    def telephone_number
+      "(#{@office_area_code}) #{@office_number} "
+    end
+  end
+```
+
+Podemos separar o numero de telefone em uma nova classe.
+
+```ruby
+  class TelephoneNumber
+  end
+```
+
+Em seguida linkamos person com telephone_number
+
+```ruby
+  class Person
+    def initialize
+      @office_telephone = TelephoneNumber.new
+    end
+  end
+  ```
+
+Em seguida usamos Move field
+
+```ruby 
+  class TelephoenNumber
+    attr_accessor :area_code
+  end
+
+  class Person
+    def initialize
+      @office_telephone = TelephoneNumber.new
+    end
+
+    def telephone_number
+      "(#{@office_area_code}) #{@office_number} "
+    end
+
+    def office_area_code
+      @office_telephone.area_code
+    end
+
+    def office_area_code=(arg)
+      @office_telephone.area_code = arg
+    end
+  end
+```
+
+Agora podemos mover o outro campo e usar Move Method em telephone_number
+
+```ruby
+  class Person
+    attr_reader :name
+
+    def initialize
+      @office_telephone = TelephoneNumber.new
+    end
+
+    def telephone_number
+      @office_telephone.telephone_number
+    end
+
+    def office_telephone
+      @office_telephone
+    end
+  end
+
+
+  class TelephoneNumber
+    attr_accessor :area_code, :number
+
+    def telephone_number
+      "(#{area_code}) #{number}"
+    end
+  end
+```
+
+### Referencias
+ FIELDS, Jay; HARVIE, Shane; FOWLER, Martin; BECK, Kent. Refactoring Ruby Edition. Boston: Addison-Wesley, 2009

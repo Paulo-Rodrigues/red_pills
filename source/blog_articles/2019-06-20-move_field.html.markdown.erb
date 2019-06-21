@@ -1,0 +1,50 @@
+---
+title : "Move field"
+tags: [ruby, refactoring]
+date: 20-06-2019
+layout: post
+---
+
+Se um campo é usado ou será mais usado em outra classe mais do que na classe em que esse campo é definido, devemos usar **Move Field.**
+
+Conforme um sistema cresce, a necessidade de criar novas classes e definir responsabilidades se torna imprescindivel. 
+
+Outra razão para se usar o Move field é quando usamos **Extract Class.**
+
+## Como funciona
+
+* Crie na classe alvo um attr_reader ou writer caso necessário.
+
+* Substitua as referenciasao campo anterior por referencias apropriadas.
+
+* Test
+
+## Exemplo
+
+```ruby
+  class Account
+   ...
+    def interest_for_amount_days(amount, days)
+      @interest_rate * amount * days / 365
+    end
+   ...
+  end
+```
+
+Aora moveremos o @interest_rate para a classe Account type, em seguida redireciionamos os métodos de account para usar os de account type e removemos a variável de instancia @interest_rate de account.
+
+```ruby
+  class AccountType
+    attr_accessor :interest_rate
+    ...
+  end
+
+  def interest_for_amount_days(amount, days)
+    @account_type.interst_rate * amount * days / 365
+  end
+
+```
+
+### Referencias
+ FIELDS, Jay; HARVIE, Shane; FOWLER, Martin; BECK, Kent. Refactoring Ruby Edition. Boston: Addison-Wesley, 2009
+
