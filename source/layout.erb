@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
 
     <title>Red Pills<%= ' - ' + current_article.title unless current_article.nil? %></title>
+    <%= favicon_tag 'images/icon.png' %>
     <%= feed_tag :atom, "#{blog.options.prefix.to_s}/feed.xml", title: "Atom Feed" %>
     <%= stylesheet_link_tag 'application'%>
   </head>
