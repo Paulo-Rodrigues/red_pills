@@ -1,0 +1,119 @@
+---
+title : "Template Method"
+tags: [python, design-patterns]
+date: 12-12-2019
+layout: post
+---
+
+Como aqui ja possuimos um post sobre o design pattern Template Method, porém em ruby, tomo a liberdade de usar as mesmas definições do referido post mas com um diferente código. Não será muito dificil passar este código de Python para Ruby, caso queira.
+
+Darei detalhes da implementação, para facilitar a compreensão.
+
+Template Method é um Behavioral Pattern (padrão de comportamento). O GOF(gang of four) define o Template method da seguinte forma:
+
+> "Defina o esqueleto de um algoritmo em uma operação, passe alguns passos para subclasses. Template Method permite que subclasses redefinam certos passos de um algoritmo sem mudar a estrutura desse algoritmo."
+
+Pense num cenário onde você possua uma parte de código realmente complexa. Caso nada nunca necessite mudar, então não seria exatamente um problema. Mas imagine que algo bem no meio desse algoritmo necessite variar seu comportamento, algumas vezes fará isto, outras vezes fará aquilo.
+
+```python
+from abc import ABC
+
+class Game(ABC):
+    def __init__(self, number_of_players):
+        self.number_of_players = number_of_players
+        self.current_player = 0
+
+    def run(self):
+        self.start()
+        while not self.have_winner:
+            self.take_turn()
+        print(f'Player {self.winning_player} wins!')
+
+    def start(self): pass
+
+    @property
+    def have_winner(self): pass
+
+    def take_turn(self): pass
+
+    @property
+    def winning_player(self): pass
+
+class Chess(Game):
+    def __init__(self):
+        super().__init__(2)
+        self.max_turn = 10
+        self.turn = 1
+
+    def start(self):
+        print('Starting Chess')
+
+    @property
+    def have_winner(self):
+        return self.turn == self.max_turn
+
+    def take_turn(self):
+        print(f'Turn {self.turn} taken by player ')
+        self.turn += 1
+        self.current_player = - self.current_player
+    @property
+    def winning_player(self):
+        return self.current_player
+
+if __name__=='__main__':
+    chess = Chess()
+    chess.run()
+    
+```
+
+Importamos do modulo abc a classe ABC, que é uma AbstractBaseClass, e inicializamos a classe Game, que será a nossa Abstract Base Class.
+
+```python
+from abc import ABC
+
+class Game(ABC):
+    def __init__(self, number_of_players):
+        self.number_of_players = number_of_players
+        self.current_player = 0
+
+```
+A parte mais relevante desse código está aqui:
+
+```python
+    def start(self): pass
+
+    @property
+    def have_winner(self): pass
+
+    def take_turn(self): pass
+
+    @property
+    def winning_player(self): pass
+```
+
+Esses são os métodos que devem ser implemantados pelas classes que herdarão de Game. Podemos ver esses métodos implementados na classe ChessGame.
+
+```python
+    def start(self):
+        print('Starting Chess')
+
+    @property
+    def have_winner(self):
+        return self.turn == self.max_turn
+
+    def take_turn(self):
+        print(f'Turn {self.turn} taken by player ')
+        self.turn += 1
+        self.current_player = - self.current_player
+    @property
+    def winning_player(self):
+        return self.current_player
+```
+
+A idéia por trás do Template Method Patter é a construção de uma classe abstrata com um método esqueleto (template method). Esse método é responsável por cuidar dos processos que variam, mas ele o faz atraves de chamadas a métodos abstratos que devem ser implementados pelas classes concretas. Nós apenas precisamos escolher a variação de que necessitamos a partir de alguma subclasse.
+
+### Referências
+
+GAMMA, Erich...[et al]. **Design Patterns: elements of reusable object-oriented software.** Boston. Addison-Wesley. 1995.
+
+OLSEN, Russ. **Design Patterns in Ruby.** Boston. Addison-Wesley. 2008
