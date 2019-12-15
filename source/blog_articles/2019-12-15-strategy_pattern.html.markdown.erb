@@ -1,0 +1,95 @@
+---
+title : "Strategy Pattern"
+tags: [ruby, design-patterns]
+date: 15-12-2019
+layout: post
+---
+
+A definição do GOF para o design pattern Strategy é: 
+
+> "Definida uma familia de algoritmos, encapsule cada uma delas e faça-as intercambiáveis. O Pattern Strategy permite que o algoritmo varie independente dos clientes que o usem."
+
+Como sabemos, Template Method é baseado em herança, isso pode trazer possíveis desvantagens, como, suas subclasses estão entrelaçadas com sua superclasse. Uma recomendação do GOF a esse respeito é que devemos preferir delegar.
+
+Como exemplo imaginemos que necessitamos criar relatórios em certos formatos(HTML, texto puro, markdown, etc). Podemos fazer da seguinte maneira.
+
+```ruby
+class Formatter
+  def output_report(title, text)
+    raise 'Abstract method, need implementation'
+  end
+end
+```
+
+Essa é nossa classe Base(Abstract class).
+
+Agora delegamos a variação do algoritmo para suas subclasses.
+
+```ruby
+class HTMLFormatter < Formatter
+  def output_report(title, text)
+   # code ...
+  end
+end
+
+class PlainTextFormatter < Formatter
+  def output_report(title, text)
+    puts("**#{title}**")
+    # code ...
+  end
+end
+
+class MarkdownFormatter < Formmater
+  def output_report(title, text)
+    puts("# #{title}")
+    # code ...
+  end
+end
+```
+
+Os detalhes de implementação agora estão a cargo de cada subclasse de Formatter, de forma que nossa classe Relatório ficará muito mais simples.
+
+```ruby
+class Report
+  attr_reader :title, :text
+  attr_accessor :formater
+
+  def initialize(title, text, formatter)
+    @title = title
+    @text = text
+    @formatter = formatter
+  end
+
+  def output_report
+    @formatter.output_report(@title, @text)
+  end
+end
+```
+
+Agora precisamos apenas prover a classe Relatório(Report) com o Objeto de formatação correto
+
+```ruby
+report = Report.new('title', 'text', HTMLFormatter.new)
+report.output_report
+```
+
+Agora podemos também e de forma fácil, mudar o formato de saída em runtime.
+
+```ruby
+report = Report.new('title', 'text', HTMLFormatter.new)
+report.output_report
+
+report.formatter = PLainTextFormatter.new
+report.output_report
+
+report.formatter = MarkdownFormatter.new
+report.output_report
+
+# etc ...
+```
+
+### Referências
+
+GAMMA, Erich...[et al]. **Design Patterns: elements of reusable object-oriented software.** Boston. Addison-Wesley. 1995.
+
+OLSEN, Russ. **Design Patterns in Ruby.** Boston. Addison-Wesley. 2008
