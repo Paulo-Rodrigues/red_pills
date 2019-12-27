@@ -1,0 +1,86 @@
+---
+title : "State Pattern"
+tags: [ruby, design-patterns]
+date: 27-12-2019
+layout: post
+---
+
+O GOF define o pattern State da seguinte maneira:
+
+> Permite a um objeto alterar seu comportamento quando seu estado interno muda. O Objeto parece mudar de Classe
+
+Se o comportamento de um objeto depende de seu estado interno, então State pattern pode ser uma boa solução.
+
+Nesse post mostrarei um exemplo simples, mas bastante intuitivo de sua aplicação.
+
+Contruiremos um simples interruptor de luz conceitual.
+
+```ruby
+class Switch
+  attr_accessor :state
+
+  def initialize
+    @state = Offstate.new
+  end
+
+  def on
+    @state.on(self)
+  end
+
+  def off
+    @state.off(self)
+  end
+end
+```
+
+Essa é a nossa classe do interruptor, perceba que como valor default para seu estado (attr_accessor :state), instanciamos um objeto da classe Offstate, que implementaremos a seguir.
+
+Tambem temos os métodos on e off e passamos self(instancia de Switch).
+
+Implementaremos nossa classe State, que servira como classe base para as classes On E Off.
+
+```ruby
+class State
+  def on(switch)
+    puts "Light is on"
+  end
+
+  def off(switch)
+    puts "Light is off"
+  end
+end
+```
+
+Agora implementaremos nossas classes On e Off que herdarão de State
+
+```ruby
+class OnState < State
+  def initialize
+    puts "light turning on"
+  end
+
+  def off(switch)
+    puts 'turning light off'
+    switch.state = Offstate.new
+  end
+end
+
+class Offstate < State
+  def initialize
+    puts "light turned off"
+  end
+
+  def on(switch)
+    puts 'Turning light on'
+    switch.state = OnState.new
+  end
+end
+```
+
+Perceba que Off deve implementar o método **on** e On deve implementar o método **off**, um pouco contraintuitivo não.
+
+### Referências
+
+GAMMA, Erich...[et al]. **Design Patterns: elements of reusable object-oriented software.** Boston. Addison-Wesley. 1995.
+
+OLSEN, Russ. **Design Patterns in Ruby.** Boston. Addison-Wesley. 2008
